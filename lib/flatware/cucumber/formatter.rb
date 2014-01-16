@@ -33,6 +33,7 @@ module Flatware
 
       def exception(exception, status)
         unless @in_a_step
+          scenario_name("unknown", "Unknown Scenario", 1, 1) unless current_scenario
           current_scenario.exception = exception
           send_progress(status)
         end

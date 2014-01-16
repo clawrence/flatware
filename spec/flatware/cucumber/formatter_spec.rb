@@ -10,8 +10,6 @@ describe Flatware::Cucumber::Formatter do
     stub_const 'Flatware::Sink', double('Sink', client: sink)
       mother.stub(:scenarios).and_return [],
         [double('Scenario', file_colon_line: 'file:11', status: nil, exception: nil, name: nil)]
-
-    formatter.scenario_name nil, nil, 'file:11'
   end
 
   subject(:formatter) { described_class.new mother }
@@ -47,12 +45,25 @@ describe Flatware::Cucumber::Formatter do
     end
   end
 
-  context 'when an exception happens outside a step' do
+  context 'when an exception happens outside a step (with scenarios)' do
+    before { formatter.scenario_name nil, nil, 'file:11' }
     it 'marks the scenario as failing outside of a step' do
       formatter.exception(exception, :failed)
 
       sink.should_receive(:checkpoint).with do |checkpoint|
         checkpoint.scenarios.select(&:failed_outside_step?).size == 1
+      end
+
+      formatter.after_features
+    end
+  end
+
+  context 'when an exception happens outside a step (without scenarios)' do
+    it 'for now just do not crash!!!' do
+      formatter.exception(exception, :failed)
+
+      sink.should_receive(:checkpoint).with do |checkpoint|
+        checkpoint.scenarios.select(&:failed_outside_step?).size == 0
       end
 
       formatter.after_features
